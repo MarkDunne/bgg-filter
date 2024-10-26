@@ -136,8 +136,6 @@ df["matches_filters"] = (
     & (df["complexity"] <= complexity_range[1])
 )
 
-st.dataframe(df)
-
 if bestwith:
     any_bestwith = False
     for value in bestwith:
