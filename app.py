@@ -22,38 +22,36 @@ def load_data():
 def make_graph(df):
     fig1 = go.Figure()
 
-    for matches in [False, True]:
-        for is_pareto in [False, True]:
-            mask = (df["matches_filters"] == matches) & (df["is_pareto"] == is_pareto)
-            fig1.add_trace(
-                go.Scatter(
-                    x=df.loc[mask, "bayesaverage"],
-                    y=df.loc[mask, "complexity"],
-                    mode="markers",
-                    name=f"{'Matches' if matches else 'Does Not Match'} - {'Pareto' if is_pareto else 'Non-Pareto'}",
-                    hoverinfo="none",
-                    marker=dict(
-                        size=12 if matches and is_pareto else 10 if matches else 5,
-                        color="blue" if matches else "gray",
-                        opacity=1 if matches and is_pareto else 0.7 if matches else 0.3,
-                        line=(
-                            dict(width=2, color="orange")
-                            if is_pareto
-                            else dict(width=0)
-                        ),
-                    ),
-                    customdata=df.loc[
-                        mask,
-                        [
-                            "link",
-                            "bestwith",
-                            "recommmendedwith",
-                            "yearpublished",
-                            "name",
-                        ],
+    for is_pareto in [False, True]:
+        mask = df["is_pareto"] == is_pareto
+        fig1.add_trace(
+            go.Scatter(
+                x=df.loc[mask, "bayesaverage"],
+                y=df.loc[mask, "complexity"],
+                mode="markers",
+                name=f"{'Pareto' if is_pareto else 'Non-Pareto'}",
+                hoverinfo="none",
+                marker=dict(
+                    size=14 if is_pareto else 10,
+                    color=df.loc[mask, "playing_time"],  # Color by playing_time
+                    colorscale="RdYlGn_r",  # Choose a colorscale
+                    opacity=1 if is_pareto else 0.7,
+                    line=dict(width=2, color="#e2e2e2"),
+                    colorbar=dict(title="Playing Time"),  # Add a colorbar
+                ),
+                customdata=df.loc[
+                    mask,
+                    [
+                        "link",
+                        "bestwith",
+                        "recommmendedwith",
+                        "yearpublished",
+                        "name",
+                        "playing_time",
                     ],
-                )
+                ],
             )
+        )
 
     fig1.update_layout(
         height=500,
@@ -61,6 +59,7 @@ def make_graph(df):
         yaxis_title="Complexity Score",
         yaxis=dict(autorange="reversed"),
         hovermode="closest",
+        showlegend=False,
     )
 
     fig1.update_traces(
@@ -71,6 +70,7 @@ def make_graph(df):
             "Complexity: %{y:.2f}<br>"
             "Best With: %{customdata[1]}<br>"
             "Recommended With: %{customdata[2]}<br>"
+            "Playing Time: %{customdata[5]}<br>"
             "<a href='%{customdata[0]}' target='_blank'>BGG Link</a>"
             "<extra></extra>"
         ),
@@ -137,6 +137,13 @@ with st.sidebar:
         "Complexity", min_complexity, max_complexity, (min_complexity, max_complexity)
     )
 
+    playing_times = sorted(df["playing_time"].unique())
+    playing_time_range = st.select_slider(
+        "Playing Time Range (minutes)",
+        playing_times,
+        (playing_times[0], playing_times[-1]),
+    )
+
     bestwith = st.multiselect("Best With", range(1, 13))
     recommendedwith = st.multiselect("Recommended With", range(1, 13))
 
@@ -173,6 +180,8 @@ df["matches_filters"] = (
     & (df["bayesaverage"] <= rating_range[1])
     & (df["complexity"] >= complexity_range[0])
     & (df["complexity"] <= complexity_range[1])
+    & (df["playing_time"] >= playing_time_range[0])
+    & (df["playing_time"] <= playing_time_range[1])
 )
 
 if bestwith:
@@ -227,6 +236,7 @@ st.dataframe(
             "bestwith",
             "recommmendedwith",
             "link",
+            "playing_time",
             "types",
             "categories",
             "mechanics",
