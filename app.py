@@ -58,7 +58,7 @@ def make_graph(df):
     fig1.update_layout(
         height=500,
         xaxis_title="Average Rating",
-        yaxis_title="Complexity Score",
+        yaxis_title="Complexity Score (Simpler is lower)",
         yaxis=dict(autorange="reversed"),
         hovermode="closest",
     )
@@ -213,7 +213,9 @@ if filter_by_pareto:
 
 st.subheader("Average Rating vs Complexity")
 
-st.write(f"Found {len(df)} closest to pareto optimal boardgames.")
+st.write(f"Filtered {len(df)} boardgames.")
+
+st.caption('The highest rated, simpliest games are in the top right.')
 st.plotly_chart(make_graph(df), use_container_width=True)
 
 st.subheader("Filtered Boardgames Table")
