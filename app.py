@@ -9,7 +9,7 @@ from sklearn.neighbors import KDTree, NearestNeighbors
 
 
 # Set page config
-st.set_page_config(layout="wide", page_title="Boardgame Filter")
+st.set_page_config(layout="wide", page_title="Meeple of Interest")
 
 
 # Load data
@@ -56,8 +56,8 @@ def make_graph(df):
     fig1.update_layout(
         height=500,
         xaxis_title="Average Rating",
-        yaxis_title="Complexity Score (Simpler is near the top)",
-        yaxis=dict(autorange="reversed"),
+        yaxis_title="Complexity Score (Simpler is near the bottom)",
+        # yaxis=dict(autorange="reversed"),
         hovermode="closest",
         showlegend=False,
     )
@@ -100,8 +100,7 @@ def near_pareto(df, n_neighbors=5):
 
 df = load_data()
 
-# Title
-st.title("Boardgame Filter")
+st.title("Meeple of Interest 🎲")
 
 
 def clear_filters():
@@ -110,6 +109,7 @@ def clear_filters():
 
 
 with st.sidebar:
+    st.image("meeple.png", width=50)
     st.header("Filters")
 
     search_term = st.text_input(
@@ -224,7 +224,7 @@ st.subheader("Average Rating vs Complexity")
 
 st.write(f"Filtered {len(df)} boardgames.")
 
-st.caption('The highest rated, simpliest games are in the top right.')
+st.caption("The highest rated and most complex games are in the top right.")
 st.plotly_chart(make_graph(df), use_container_width=True)
 
 st.subheader("Filtered Boardgames Table")
