@@ -58,7 +58,7 @@ def make_graph(df):
     fig1.update_layout(
         height=500,
         xaxis_title="Average Rating",
-        yaxis_title="Complexity Score (Simpler is lower)",
+        yaxis_title="Complexity Score (Simpler is near the top)",
         yaxis=dict(autorange="reversed"),
         hovermode="closest",
     )
