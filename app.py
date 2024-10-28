@@ -1,7 +1,11 @@
+import numpy as np
 from paretoset import paretoset
+from sklearn.discriminant_analysis import StandardScaler
+from sklearn.pipeline import make_pipeline
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
+from sklearn.neighbors import KDTree, NearestNeighbors
 
 
 # Set page config
@@ -76,6 +80,24 @@ def make_graph(df):
     return fig1
 
 
+def near_pareto(df, n_neighbors=5):
+    # Scale the data
+    scaler = StandardScaler()
+    scaled_data = scaler.fit_transform(df[["bayesaverage", "complexity"]])
+
+    # Split into Pareto and non-Pareto points
+    pareto_points = scaled_data[df["is_pareto"]]
+    non_pareto_points = scaled_data[~df["is_pareto"]]
+    non_pareto_indices = df[~df["is_pareto"]].index
+
+    # Find closest Pareto point for each non-Pareto point
+    tree = KDTree(pareto_points)
+    distances, _ = tree.query(non_pareto_points, k=1)
+
+    # Return indices of n closest non-Pareto points
+    return non_pareto_indices[np.argsort(distances.flatten())[:n_neighbors]]
+
+
 df = load_data()
 
 # Title
@@ -94,8 +116,10 @@ with st.sidebar:
         "Boardgame Name", value="", key="search_term", placeholder="Search by name"
     )
 
-    min_year, max_year = int(df["yearpublished"].min()), int(df["yearpublished"].max())
-    year_range = st.slider("Year", min_year, max_year, (min_year, max_year))
+    sorted_years = sorted(df["yearpublished"].unique())
+    year_range = st.select_slider(
+        "Year", sorted_years, (sorted_years[0], sorted_years[-1])
+    )
 
     min_rating, max_rating = (
         float(df["bayesaverage"].min()),
@@ -116,7 +140,22 @@ with st.sidebar:
     bestwith = st.multiselect("Best With", range(1, 13))
     recommendedwith = st.multiselect("Recommended With", range(1, 13))
 
-    st.button("Clear Filters", on_click=clear_filters)
+    st.divider()
+
+    types = st.multiselect(
+        "Types", df["types"].explode().value_counts().index.to_list()
+    )
+    categories = st.multiselect(
+        "Categories", df["categories"].explode().value_counts().index.to_list()
+    )
+    mechanics = st.multiselect(
+        "Mechanics", df["mechanics"].explode().value_counts().index.to_list()
+    )
+
+    st.divider()
+
+    filter_by_pareto = st.toggle("Filter by Pareto Optimal", value=True)
+    num_almost_pareto = st.number_input("Number of Almost Pareto to Include", value=50)
 
 
 df["matches_filters"] = True
@@ -137,28 +176,49 @@ df["matches_filters"] = (
 )
 
 if bestwith:
-    any_bestwith = False
-    for value in bestwith:
-        any_bestwith = any_bestwith | df["bestwith"].apply(lambda x: value in x)
-    df["matches_filters"] = df["matches_filters"] & any_bestwith
+    df["matches_filters"] &= df["bestwith"].apply(
+        lambda x: any(value in x for value in bestwith)
+    )
+
 if recommendedwith:
-    any_recommendedwith = False
-    for value in recommendedwith:
-        any_recommendedwith = any_recommendedwith | df["recommmendedwith"].apply(
-            lambda x: value in x
-        )
-    df["matches_filters"] = df["matches_filters"] & any_recommendedwith
+    df["matches_filters"] &= df["recommmendedwith"].apply(
+        lambda x: any(value in x for value in recommendedwith)
+    )
+
+if types:
+    df["matches_filters"] &= df["types"].apply(
+        lambda x: any(type in x for type in types)
+    )
+
+if categories:
+    df["matches_filters"] &= df["categories"].apply(
+        lambda x: any(category in x for category in categories)
+    )
+
+if mechanics:
+    df["matches_filters"] &= df["mechanics"].apply(
+        lambda x: any(mechanic in x for mechanic in mechanics)
+    )
+
+df = df.query("matches_filters")
+
 
 df["is_pareto"] = paretoset(df[["bayesaverage", "complexity"]], sense=["max", "min"])
+df["is_pareto"] = df["is_pareto"] | df.index.isin(
+    near_pareto(df, n_neighbors=num_almost_pareto)
+)
+
+if filter_by_pareto:
+    df = df.query("is_pareto")
 
 st.subheader("Average Rating vs Complexity")
 
-st.write(f"Found {sum(df['matches_filters'])} matching boardgames.")
+st.write(f"Found {len(df)} closest to pareto optimal boardgames.")
 st.plotly_chart(make_graph(df), use_container_width=True)
 
 st.subheader("Filtered Boardgames Table")
 st.dataframe(
-    df.query("matches_filters")[
+    df[
         [
             "name",
             "yearpublished",
@@ -167,6 +227,9 @@ st.dataframe(
             "bestwith",
             "recommmendedwith",
             "link",
+            "types",
+            "categories",
+            "mechanics",
         ]
     ]
 )
