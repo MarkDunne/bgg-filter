@@ -226,13 +226,13 @@ export function ScatterPlot({
             className="w-3 h-3 rounded-full"
             style={{ backgroundColor: getRankColor(1, maxRank) }}
           />
-          <span className="text-muted-foreground">Pareto optimal</span>
+          <span className="text-muted-foreground">Best rating for given complexity</span>
           <span className="text-muted-foreground mx-1">→</span>
           <div
             className="w-3 h-3 rounded-full"
             style={{ backgroundColor: getRankColor(maxRank, maxRank) }}
           />
-          <span className="text-muted-foreground">Further from optimal</span>
+          <span className="text-muted-foreground">More complex for given rating</span>
         </div>
       </div>
       <div
@@ -261,6 +261,7 @@ export function ScatterPlot({
               tickLine={false}
               axisLine={{ stroke: "hsl(var(--border))" }}
               allowDataOverflow
+              tickFormatter={(v) => v.toFixed(2)}
               label={{
                 value: "Rating →",
                 position: "bottom",
@@ -278,6 +279,7 @@ export function ScatterPlot({
               tickLine={false}
               axisLine={{ stroke: "hsl(var(--border))" }}
               allowDataOverflow
+              tickFormatter={(v) => v.toFixed(2)}
               label={{
                 value: "Complexity →",
                 angle: -90,

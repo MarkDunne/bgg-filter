@@ -6,6 +6,7 @@ import { filterGames } from "@/lib/filter-games";
 import { FilterControls } from "@/components/filter-controls";
 import { ScatterPlot } from "@/components/scatter-plot";
 import { GameTable } from "@/components/game-table";
+import { GameDetailCard } from "@/components/game-detail-card";
 import gamesData from "@/data/games.json";
 
 const games = gamesData as Game[];
@@ -15,6 +16,8 @@ const defaultFilters: Filters = {
   paretoFilter: "pareto-and-near",
   complexityRange: [1, 5],
   playerCount: null,
+  categories: [],
+  mechanics: [],
   sortBy: "bayesaverage",
   sortOrder: "desc",
 };
@@ -22,12 +25,25 @@ const defaultFilters: Filters = {
 export default function Home() {
   const [filters, setFilters] = useState<Filters>(defaultFilters);
   const [highlightedGame, setHighlightedGame] = useState<number | null>(null);
+  const [selectedGame, setSelectedGame] = useState<number | null>(null);
   const rowRefs = useRef<Map<number, HTMLTableRowElement>>(new Map());
 
   const filteredGames = useMemo(
     () => filterGames(games, filters),
     [filters]
   );
+
+  const selectedGameData = useMemo(
+    () => filteredGames.find((g) => g.id === selectedGame) ?? null,
+    [filteredGames, selectedGame]
+  );
+
+  const handleHover = useCallback((id: number | null) => {
+    setHighlightedGame(id);
+    if (id !== null) {
+      setSelectedGame(id);
+    }
+  }, []);
 
   const handleScatterClick = useCallback((id: number) => {
     const row = rowRefs.current.get(id);
@@ -57,6 +73,7 @@ export default function Home() {
           <FilterControls
             filters={filters}
             onChange={setFilters}
+            games={games}
             gameCount={filteredGames.length}
             totalCount={games.length}
           />
@@ -65,15 +82,20 @@ export default function Home() {
             <GameTable
               games={filteredGames}
               highlightedGame={highlightedGame}
-              onHover={setHighlightedGame}
+              onHover={handleHover}
               highlightedRef={rowRefs}
             />
-            <ScatterPlot
-              games={filteredGames}
-              highlightedGame={highlightedGame}
-              onHover={setHighlightedGame}
-              onClick={handleScatterClick}
-            />
+            <div className="space-y-3 sm:space-y-4">
+              <ScatterPlot
+                games={filteredGames}
+                highlightedGame={highlightedGame}
+                onHover={handleHover}
+                onClick={handleScatterClick}
+              />
+              <div className="hidden sm:block">
+                <GameDetailCard game={selectedGameData} />
+              </div>
+            </div>
           </div>
         </main>
       </div>

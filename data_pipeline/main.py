@@ -60,9 +60,19 @@ def parse_game(item: ET.Element) -> dict:
 
     game_id = int(item.attrib["id"])
 
+    # Extract description text, clean up whitespace
+    description_el = item.find("description")
+    description = (description_el.text or "").strip() if description_el is not None else ""
+
+    # Extract thumbnail URL
+    thumbnail_el = item.find("thumbnail")
+    thumbnail = (thumbnail_el.text or "").strip() if thumbnail_el is not None else ""
+
     return {
         "id": game_id,
         "link": f"https://boardgamegeek.com/boardgame/{game_id}",
+        "description": description,
+        "thumbnail": thumbnail,
         "complexity": float(val("statistics/ratings/averageweight")),
         "min_players": int(val("minplayers")),
         "max_players": int(val("maxplayers")),

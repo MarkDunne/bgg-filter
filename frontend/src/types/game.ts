@@ -1,6 +1,8 @@
 export interface Game {
   id: number;
   name: string;
+  description: string;
+  thumbnail: string;
   yearpublished: number;
   bayesaverage: number;
   average: number;
@@ -25,6 +27,8 @@ export interface Filters {
   paretoFilter: ParetoFilter;
   complexityRange: [number, number];
   playerCount: number | null;
+  categories: string[];
+  mechanics: string[];
   sortBy: "bayesaverage" | "complexity";
   sortOrder: "asc" | "desc";
 }

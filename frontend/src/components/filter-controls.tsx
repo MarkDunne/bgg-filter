@@ -1,6 +1,7 @@
 "use client";
 
-import { Filters, ParetoFilter } from "@/types/game";
+import { useMemo } from "react";
+import { Game, Filters, ParetoFilter } from "@/types/game";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -11,11 +12,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { Search } from "lucide-react";
 
 interface FilterControlsProps {
   filters: Filters;
   onChange: (filters: Filters) => void;
+  games: Game[];
   gameCount: number;
   totalCount: number;
 }
@@ -23,9 +26,22 @@ interface FilterControlsProps {
 export function FilterControls({
   filters,
   onChange,
+  games,
   gameCount,
   totalCount,
 }: FilterControlsProps) {
+  const allCategories = useMemo(() => {
+    const cats = new Set<string>();
+    games.forEach((g) => g.categories.forEach((c) => cats.add(c)));
+    return Array.from(cats).sort();
+  }, [games]);
+
+  const allMechanics = useMemo(() => {
+    const mechs = new Set<string>();
+    games.forEach((g) => g.mechanics.forEach((m) => mechs.add(m)));
+    return Array.from(mechs).sort();
+  }, [games]);
+
   return (
     <div className="flex flex-wrap items-center gap-4 sm:gap-6 p-3 sm:p-4 bg-card rounded-lg border">
       {/* Search */}
@@ -108,6 +124,30 @@ export function FilterControls({
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      {/* Categories */}
+      <div className="flex items-center gap-2">
+        <label className="text-sm font-medium">Category:</label>
+        <MultiSelect
+          options={allCategories}
+          selected={filters.categories}
+          onChange={(categories) => onChange({ ...filters, categories })}
+          placeholder="Any"
+          className="w-32 sm:w-40"
+        />
+      </div>
+
+      {/* Mechanics */}
+      <div className="flex items-center gap-2">
+        <label className="text-sm font-medium">Mechanic:</label>
+        <MultiSelect
+          options={allMechanics}
+          selected={filters.mechanics}
+          onChange={(mechanics) => onChange({ ...filters, mechanics })}
+          placeholder="Any"
+          className="w-32 sm:w-40"
+        />
       </div>
 
       {/* Sort */}

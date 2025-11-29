@@ -41,6 +41,20 @@ export function filterGames(games: Game[], filters: Filters): Game[] {
       }
     }
 
+    // Categories (OR logic - match any selected)
+    if (filters.categories.length > 0) {
+      if (!filters.categories.some((cat) => game.categories.includes(cat))) {
+        return false;
+      }
+    }
+
+    // Mechanics (OR logic - match any selected)
+    if (filters.mechanics.length > 0) {
+      if (!filters.mechanics.some((mech) => game.mechanics.includes(mech))) {
+        return false;
+      }
+    }
+
     return true;
   });
 
