@@ -1,0 +1,25 @@
+[project]
+name = "data-pipeline"
+version = "0.1.0"
+description = "BGG data pipeline - fetches and enriches boardgame rankings"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "click>=8.3.1",
+    "ipykernel>=7.1.0",
+    "matplotlib>=3.10.7",
+    "numpy>=2.0.0",
+    "pandas>=2.3.3",
+    "plotly>=6.5.0",
+    "pyarrow>=22.0.0",
+    "python-dotenv>=1.2.1",
+    "requests>=2.32.5",
+    "requests-cache>=1.2.1",
+    "requests-ratelimiter>=0.7.0",
+    "ruff>=0.14.7",
+    "scikit-learn>=1.7.2",
+    "seaborn>=0.13.2",
+    "streamlit>=1.50.0",
+    "tenacity>=9.1.2",
+    "tqdm>=4.67.1",
+]
