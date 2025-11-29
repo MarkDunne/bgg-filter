@@ -143,7 +143,7 @@ export function FilterControls({
         aria-live="polite"
         aria-atomic="true"
       >
-        {gameCount} of {totalCount} games
+        Showing {gameCount} of {totalCount} games
       </Badge>
     </div>
   );

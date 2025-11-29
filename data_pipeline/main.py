@@ -13,8 +13,6 @@ from dotenv import load_dotenv
 from requests import HTTPError, Session
 from requests_cache import CacheMixin
 from requests_ratelimiter import LimiterMixin
-from sklearn.neighbors import KDTree
-from sklearn.preprocessing import MinMaxScaler
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -121,24 +119,38 @@ def is_pareto_efficient(costs: np.ndarray) -> np.ndarray:
     return is_efficient_mask
 
 
-def add_pareto_flags(df: pd.DataFrame, n_neighbors: int = 100) -> pd.DataFrame:
-    """Add is_pareto and almost_pareto columns based on rating vs complexity."""
+def add_pareto_ranks(df: pd.DataFrame, max_rank: int = 10) -> pd.DataFrame:
+    """Assign pareto ranks using iterative non-dominated sorting.
+
+    Rank 1 = pareto optimal (no game dominates it)
+    Rank 2 = pareto optimal after removing rank 1
+    Rank 3 = pareto optimal after removing ranks 1-2
+    etc.
+
+    Args:
+        df: DataFrame with bayesaverage and complexity columns.
+        max_rank: Maximum number of ranking iterations to run.
+    """
     df = df.dropna(subset=["bayesaverage", "complexity"]).copy()
+    df["pareto_rank"] = 0
 
-    # Find pareto-optimal games (highest rating for their complexity level)
-    # Negate bayesaverage to convert "maximize" to "minimize"
-    costs = np.column_stack([-df["bayesaverage"].values, df["complexity"].values])
-    df["is_pareto"] = is_pareto_efficient(costs)
+    remaining = df.index.tolist()
+    for rank in range(1, max_rank + 1):
+        if not remaining:
+            break
 
-    # Find games closest to the pareto frontier
-    scaled = MinMaxScaler().fit_transform(df[["bayesaverage", "complexity"]])
-    is_pareto = df["is_pareto"].values
-    tree = KDTree(scaled[is_pareto])
-    distances, _ = tree.query(scaled[~is_pareto], k=1)
-    nearest_indices = df[~is_pareto].index[
-        np.argsort(distances.flatten())[:n_neighbors]
-    ]
-    df["almost_pareto"] = df.index.isin(nearest_indices)
+        subset = df.loc[remaining]
+        # Negate bayesaverage to convert "maximize rating" to "minimize"
+        costs = np.column_stack([-subset["bayesaverage"].values, subset["complexity"].values])
+        is_pareto = is_pareto_efficient(costs)
+
+        pareto_ids = subset.index[is_pareto].tolist()
+        df.loc[pareto_ids, "pareto_rank"] = rank
+        remaining = [i for i in remaining if i not in pareto_ids]
+
+    # Anything left gets max_rank + 1
+    if remaining:
+        df.loc[remaining, "pareto_rank"] = max_rank + 1
 
     return df
 
@@ -161,13 +173,18 @@ def add_pareto_flags(df: pd.DataFrame, n_neighbors: int = 100) -> pd.DataFrame:
 @click.option(
     "-n", "--limit", type=int, default=100, help="Limit games processed (for testing)"
 )
-@click.option("--pareto-neighbors", type=int, default=100)
+@click.option(
+    "--max-rank",
+    type=int,
+    default=10,
+    help="Maximum pareto rank iterations (rank 1 = optimal, rank 2 = optimal after removing rank 1, etc.)",
+)
 @click.option("-v", "--verbose", is_flag=True)
 def main(
     input_path: Path,
     output_path: Path,
     limit: int | None,
-    pareto_neighbors: int,
+    max_rank: int,
     verbose: bool,
 ):
     """Build enriched boardgame dataset with pareto analysis."""
@@ -194,9 +211,14 @@ def main(
     df = df.drop(columns=["recommmendedwith"])
     log.info(f"Enriched {len(df)} games")
 
-    # Compute pareto frontier
-    df = add_pareto_flags(df, pareto_neighbors)
-    log.info(f"Found {df['is_pareto'].sum()} pareto-optimal games")
+    # Compute pareto ranks
+    df = add_pareto_ranks(df, max_rank)
+    log.info(f"Found {(df['pareto_rank'] == 1).sum()} pareto-optimal games (rank 1)")
+    log.info(f"Found {(df['pareto_rank'] <= max_rank).sum()} ranked games (ranks 1-{max_rank})")
+    for rank in range(1, max_rank + 1):
+        count = (df["pareto_rank"] == rank).sum()
+        if count > 0:
+            log.debug(f"  Rank {rank}: {count} games")
 
     # Save
     output_path.parent.mkdir(parents=True, exist_ok=True)

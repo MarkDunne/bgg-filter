@@ -67,14 +67,9 @@ export function GameTable({
                       >
                         {game.name}
                       </a>
-                      {game.is_pareto && (
+                      {game.pareto_rank === 1 && (
                         <Badge variant="default" className="text-[10px] px-1.5 py-0 shrink-0">
                           Pareto
-                        </Badge>
-                      )}
-                      {game.almost_pareto && (
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 shrink-0">
-                          Near Pareto
                         </Badge>
                       )}
                     </div>

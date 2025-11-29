@@ -15,8 +15,7 @@ export interface Game {
   types: string[];
   bestwith: number[];
   recommendedwith: number[];
-  is_pareto: boolean;
-  almost_pareto: boolean;
+  pareto_rank: number;
 }
 
 export type ParetoFilter = "all" | "pareto-and-near" | "pareto-only";

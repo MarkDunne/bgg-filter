@@ -14,13 +14,16 @@ export function filterGames(games: Game[], filters: Filters): Game[] {
     filtered = fuse.search(filters.search).map((result) => result.item);
   }
 
+  // Derive max rank from data (highest rank - 1, since highest is "unranked")
+  const maxRank = filtered.length > 0 ? Math.max(...filtered.map((g) => g.pareto_rank)) - 1 : 10;
+
   // Apply other filters
   filtered = filtered.filter((game) => {
-    // Pareto filter
+    // Pareto filter (rank 1 = optimal, ranks 2-maxRank = near, maxRank+1 = unranked)
     if (filters.paretoFilter === "pareto-only") {
-      if (!game.is_pareto) return false;
+      if (game.pareto_rank !== 1) return false;
     } else if (filters.paretoFilter === "pareto-and-near") {
-      if (!game.is_pareto && !game.almost_pareto) return false;
+      if (game.pareto_rank > maxRank) return false;
     }
 
     // Complexity range
