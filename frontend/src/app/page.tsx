@@ -40,17 +40,20 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6 max-w-[1600px]">
-        <header className="mb-6">
-          <h1 className="text-2xl font-bold tracking-tight">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-[1600px]">
+        <header className="mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
             Board Game Explorer
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground">
             Find the best games for your complexity preference
+          </p>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+            <span className="font-medium">Pareto optimal</span> games have the highest rating at their complexity level — no other game is both simpler and better rated.
           </p>
         </header>
 
-        <div className="space-y-4">
+        <main className="space-y-3 sm:space-y-4">
           <FilterControls
             filters={filters}
             onChange={setFilters}
@@ -58,7 +61,7 @@ export default function Home() {
             totalCount={games.length}
           />
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
             <GameTable
               games={filteredGames}
               highlightedGame={highlightedGame}
@@ -72,7 +75,7 @@ export default function Home() {
               onClick={handleScatterClick}
             />
           </div>
-        </div>
+        </main>
       </div>
     </div>
   );

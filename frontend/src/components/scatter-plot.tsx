@@ -63,8 +63,12 @@ export function ScatterPlot({
     : [1, 5];
 
   return (
-    <div className="w-full h-[350px] min-h-[350px] bg-card rounded-lg border p-4">
-      <div className="flex justify-end gap-4 mb-2 text-xs">
+    <div
+      className="w-full h-[300px] sm:h-[350px] min-h-[300px] bg-card rounded-lg border p-3 sm:p-4"
+      role="img"
+      aria-label={`Scatter plot showing ${data.length} games plotted by rating (x-axis) and complexity (y-axis). ${data.filter(d => d.label === "Pareto").length} Pareto optimal games, ${data.filter(d => d.label === "Near Pareto").length} near Pareto games.`}
+    >
+      <div className="flex flex-wrap justify-end gap-2 sm:gap-4 mb-2 text-xs" aria-hidden="true">
         {Object.entries(COLORS).map(([label, color]) => (
           <div key={label} className="flex items-center gap-1.5">
             <div

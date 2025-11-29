@@ -26,15 +26,15 @@ export function GameTable({
 }: GameTableProps) {
   return (
     <div className="rounded-lg border bg-card overflow-hidden">
-      <div className="max-h-[600px] overflow-y-auto">
+      <div className="max-h-[400px] sm:max-h-[600px] overflow-auto">
         <Table>
           <TableHeader className="sticky top-0 bg-card z-10">
             <TableRow>
-              <TableHead className="min-w-[300px]">Name</TableHead>
-              <TableHead className="w-[80px] text-right">Rating</TableHead>
-              <TableHead className="w-[90px] text-right">Complexity</TableHead>
-              <TableHead className="w-[130px]">Recommended</TableHead>
-              <TableHead className="w-[70px] text-right">Time</TableHead>
+              <TableHead className="min-w-[200px] sm:min-w-[300px]">Name</TableHead>
+              <TableHead className="w-[70px] sm:w-[80px] text-right">Rating</TableHead>
+              <TableHead className="w-[80px] sm:w-[90px] text-right">Complexity</TableHead>
+              <TableHead className="w-[100px] sm:w-[130px]">Recommended</TableHead>
+              <TableHead className="w-[60px] sm:w-[70px] text-right">Time</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -61,8 +61,9 @@ export function GameTable({
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="font-medium truncate max-w-[400px] hover:text-primary transition-colors"
+                        className="font-medium truncate max-w-[180px] sm:max-w-[400px] hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 rounded"
                         title={game.name}
+                        aria-label={`${game.name} - opens BoardGameGeek page in new tab`}
                       >
                         {game.name}
                       </a>

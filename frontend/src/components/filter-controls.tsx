@@ -27,29 +27,30 @@ export function FilterControls({
   totalCount,
 }: FilterControlsProps) {
   return (
-    <div className="flex flex-wrap items-center gap-6 p-4 bg-card rounded-lg border">
+    <div className="flex flex-wrap items-center gap-4 sm:gap-6 p-3 sm:p-4 bg-card rounded-lg border">
       {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <div className="relative w-full sm:w-auto">
+        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
         <Input
           type="text"
           placeholder="Search games..."
+          aria-label="Search games by name"
           value={filters.search}
           onChange={(e) => onChange({ ...filters, search: e.target.value })}
-          className="pl-8 w-48"
+          className="pl-8 w-full sm:w-48"
         />
       </div>
 
       {/* Pareto filter */}
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium">Show:</span>
+        <label id="pareto-label" className="text-sm font-medium">Show:</label>
         <Select
           value={filters.paretoFilter}
           onValueChange={(value: ParetoFilter) =>
             onChange({ ...filters, paretoFilter: value })
           }
         >
-          <SelectTrigger className="w-36">
+          <SelectTrigger className="w-36" aria-labelledby="pareto-label">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -61,8 +62,8 @@ export function FilterControls({
       </div>
 
       {/* Complexity slider */}
-      <div className="flex items-center gap-3 min-w-[240px]">
-        <span className="text-sm font-medium whitespace-nowrap">Complexity:</span>
+      <div className="flex items-center gap-3 min-w-[200px] sm:min-w-[240px]">
+        <label id="complexity-label" className="text-sm font-medium whitespace-nowrap">Complexity:</label>
         <Slider
           value={filters.complexityRange}
           onValueChange={(value) =>
@@ -71,16 +72,21 @@ export function FilterControls({
           min={1}
           max={5}
           step={0.1}
-          className="w-32"
+          className="w-24 sm:w-32 touch-pan-x"
+          aria-labelledby="complexity-label"
+          aria-valuetext={`${filters.complexityRange[0].toFixed(1)} to ${filters.complexityRange[1].toFixed(1)}`}
         />
-        <span className="text-sm text-muted-foreground w-16">
+        <span className="text-sm text-muted-foreground w-16" aria-hidden="true">
           {filters.complexityRange[0].toFixed(1)}-{filters.complexityRange[1].toFixed(1)}
         </span>
       </div>
 
       {/* Player count */}
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium">Recommended for:</span>
+        <label id="players-label" className="text-sm font-medium whitespace-nowrap">
+          <span className="hidden sm:inline">Recommended for:</span>
+          <span className="sm:hidden">Players:</span>
+        </label>
         <Select
           value={filters.playerCount?.toString() ?? "any"}
           onValueChange={(value) =>
@@ -90,7 +96,7 @@ export function FilterControls({
             })
           }
         >
-          <SelectTrigger className="w-28">
+          <SelectTrigger className="w-28" aria-labelledby="players-label">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -106,7 +112,7 @@ export function FilterControls({
 
       {/* Sort */}
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium">Sort:</span>
+        <label id="sort-label" className="text-sm font-medium">Sort:</label>
         <Select
           value={`${filters.sortBy}-${filters.sortOrder}`}
           onValueChange={(value) => {
@@ -117,7 +123,7 @@ export function FilterControls({
             onChange({ ...filters, sortBy, sortOrder });
           }}
         >
-          <SelectTrigger className="w-50">
+          <SelectTrigger className="w-44 sm:w-50" aria-labelledby="sort-label">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -129,8 +135,14 @@ export function FilterControls({
         </Select>
       </div>
 
-      {/* Count badge */}
-      <Badge variant="secondary" className="ml-auto">
+      {/* Count badge - live region for screen readers */}
+      <Badge
+        variant="secondary"
+        className="ml-auto"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      >
         {gameCount} of {totalCount} games
       </Badge>
     </div>
