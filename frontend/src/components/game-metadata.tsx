@@ -51,15 +51,15 @@ export function GameMetadata({ game, compact = false, showPlayersTime = true }: 
         </>
       )}
       {game.categories.length > 0 && (
-        <div className={`flex items-start ${gap}`}>
-          <Layers className={`${iconSize} text-muted-foreground shrink-0 mt-0.5`} />
-          <span className={`text-muted-foreground ${compact ? "" : "line-clamp-1"}`}>{game.categories.join(", ")}</span>
+        <div className={`flex items-start ${gap} min-w-0`}>
+          <Layers className={`${iconSize} text-muted-foreground shrink-0 flex-shrink-0 mt-0.5`} />
+          <span className={`text-muted-foreground min-w-0 ${compact ? "break-words" : "line-clamp-1 break-words"}`}>{game.categories.join(", ")}</span>
         </div>
       )}
       {game.mechanics.length > 0 && (
-        <div className={`flex items-start ${gap}`}>
-          <Cog className={`${iconSize} text-muted-foreground shrink-0 mt-0.5`} />
-          <span className={`text-muted-foreground ${compact ? "" : "line-clamp-1"}`}>{game.mechanics.join(", ")}</span>
+        <div className={`flex items-start ${gap} min-w-0`}>
+          <Cog className={`${iconSize} text-muted-foreground shrink-0 flex-shrink-0 mt-0.5`} />
+          <span className={`text-muted-foreground min-w-0 ${compact ? "break-words" : "line-clamp-1 break-words"}`}>{game.mechanics.join(", ")}</span>
         </div>
       )}
     </div>

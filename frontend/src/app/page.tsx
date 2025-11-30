@@ -25,7 +25,7 @@ const defaultFilters: Filters = {
 
 export default function Home() {
   const [filters, setFilters] = useState<Filters>(defaultFilters);
-  const { highlightedGame, selectedGame, rowRefs, handleHover, handleScatterClick } = useGameSelection();
+  const { highlightedGame, selectedGame, mobileSelectedGame, rowRefs, handleHover, handleMobileClick, handleScatterClick } = useGameSelection();
 
   const filteredGames = useMemo(() => filterGames(games, filters), [filters]);
   const selectedGameData = useMemo(
@@ -34,8 +34,8 @@ export default function Home() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-[1600px]">
+    <div className="min-h-screen bg-background overflow-x-hidden">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-[1600px] w-full overflow-x-hidden">
         <header className="mb-4 sm:mb-6">
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Board Game Explorer</h1>
           <p className="text-sm sm:text-base text-muted-foreground">Find the best games for your complexity preference</p>
@@ -48,7 +48,7 @@ export default function Home() {
           <FilterControls filters={filters} onChange={setFilters} games={games} gameCount={filteredGames.length} totalCount={games.length} />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-            <GameTable games={filteredGames} highlightedGame={highlightedGame} onHover={handleHover} highlightedRef={rowRefs} />
+            <GameTable games={filteredGames} highlightedGame={highlightedGame} mobileSelectedGame={mobileSelectedGame} onHover={handleHover} onMobileClick={handleMobileClick} highlightedRef={rowRefs} />
             <div className="space-y-3 sm:space-y-4">
               <ScatterPlot games={filteredGames} highlightedGame={highlightedGame} onHover={handleHover} onClick={handleScatterClick} />
               <div className="hidden sm:block">
