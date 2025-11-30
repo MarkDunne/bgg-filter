@@ -16,10 +16,8 @@ export const metadata: Metadata = {
   title: "Board Game Explorer",
   description: "Find the best board games for your complexity preference using pareto-optimal analysis",
   icons: {
-    icon: [
-      { url: "/favicon.png", sizes: "32x32", type: "image/png" },
-      { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
-    ],
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
     apple: "/apple-touch-icon.png",
   },
   openGraph: {
