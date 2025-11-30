@@ -51,25 +51,42 @@ export default function Home() {
     <div className="min-h-screen bg-background overflow-x-hidden">
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-[1600px] w-full overflow-x-hidden">
         <header className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Board Game Explorer</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Find the best games for your complexity preference</p>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            The Goldilocks score represents the trade off between rating and complexity, letting you find that sweet spot of having a great time and not too many rules. A score of 1 is the best, you won't find a better rated game at that complexity, and a score of 2 is the next best, etc.
+          <div className="mb-3">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+              Find Me a Boardgame
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+              Discover the perfect board game for your group
+            </p>
+          </div>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Find the best board games by complexity and rating. Filter by player count, categories, and mechanics to find your ideal game.
           </p>
+          <section className="mt-3 space-y-2" aria-label="About Goldilocks Score">
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              <strong className="text-foreground">The Goldilocks Score</strong> helps you find the perfect balance between game quality and complexity.
+              A score of 1 means you won't find a better-rated game at that complexity level.
+              Score 2 is the next best option, and so on. This pareto-optimal analysis ensures you get maximum enjoyment without overwhelming rules.
+            </p>
+          </section>
         </header>
 
-        <main className="space-y-3 sm:space-y-4">
-          <FilterControls filters={filters} onChange={setFilters} games={games} gameCount={filteredGames.length} totalCount={games.length} />
+        <main className="space-y-3 sm:space-y-4" role="main">
+          <section aria-label="Game Filters">
+            <FilterControls filters={filters} onChange={setFilters} games={games} gameCount={filteredGames.length} totalCount={games.length} />
+          </section>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-            <GameTable games={filteredGames} highlightedGame={highlightedGame} mobileSelectedGame={mobileSelectedGame} onHover={handleHover} onMobileClick={handleMobileClick} highlightedRef={rowRefs} />
-            <div className="space-y-3 sm:space-y-4">
+          <section aria-label="Game Results" className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+            <article aria-label="Game List">
+              <GameTable games={filteredGames} highlightedGame={highlightedGame} mobileSelectedGame={mobileSelectedGame} onHover={handleHover} onMobileClick={handleMobileClick} highlightedRef={rowRefs} />
+            </article>
+            <aside className="space-y-3 sm:space-y-4" aria-label="Game Visualization">
               <ScatterPlot games={filteredGames} highlightedGame={highlightedGame} onHover={handleHover} onClick={handleScatterClick} />
               <div className="hidden sm:block">
                 <GameDetailCard game={selectedGameData} />
               </div>
-            </div>
-          </div>
+            </aside>
+          </section>
         </main>
       </div>
     </div>

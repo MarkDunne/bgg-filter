@@ -1,0 +1,1 @@
+ok good. Now that we have our solution, lets go through 5 rounds of critic, review, refactor, simplify. Make the code beautiful, and small, dont over engineer and make full and idiomatic use of existing libraries
