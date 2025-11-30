@@ -37,7 +37,7 @@ export function ScatterPlot({ games, highlightedGame, onHover, onClick }: Scatte
   const gameIds = useMemo(() => games.map((g) => g.id).sort().join(","), [games]);
 
   const maxRank = useMemo(
-    () => (games.length > 0 ? Math.max(...games.map((g) => g.pareto_rank)) - 1 : 10),
+    () => (games.length > 0 ? Math.max(...games.map((g) => g.goldilocks_score)) - 1 : 10),
     [gameIds] // eslint-disable-line react-hooks/exhaustive-deps
   );
 
@@ -48,8 +48,8 @@ export function ScatterPlot({ games, highlightedGame, onHover, onClick }: Scatte
         name: g.name,
         complexity: g.complexity,
         rating: g.bayesaverage,
-        rank: g.pareto_rank,
-        color: getRankColor(g.pareto_rank, maxRank),
+        score: g.goldilocks_score,
+        color: getRankColor(g.goldilocks_score, maxRank),
       })),
     [gameIds, maxRank] // eslint-disable-line react-hooks/exhaustive-deps
   );
@@ -75,7 +75,7 @@ export function ScatterPlot({ games, highlightedGame, onHover, onClick }: Scatte
     <div
       className="w-full h-[300px] sm:h-[350px] min-h-[300px] bg-card rounded-lg border p-3 sm:p-4"
       role="img"
-      aria-label={`Scatter plot showing ${data.length} games by rating and complexity. ${data.filter((d) => d.rank === 1).length} Pareto optimal.`}
+      aria-label={`Scatter plot showing ${data.length} games by rating and complexity. ${data.filter((d) => d.score === 1).length} with Goldilocks Score 1 (optimal).`}
     >
       <div className="flex justify-between items-center gap-2 mb-2 text-xs" aria-hidden="true">
         <div className="flex items-center gap-1">
@@ -133,7 +133,8 @@ export function ScatterPlot({ games, highlightedGame, onHover, onClick }: Scatte
                     <p className="text-xs text-muted-foreground">
                       Rating: {d.rating.toFixed(2)} · Complexity: {d.complexity.toFixed(1)}
                     </p>
-                    {d.rank === 1 && <p className="text-xs mt-1" style={{ color: d.color }}>Pareto optimal</p>}
+                    {d.score === 1 && <p className="text-xs mt-1" style={{ color: d.color }}>Goldilocks Score: 1 (Optimal)</p>}
+                    {d.score > 1 && <p className="text-xs mt-1 text-muted-foreground">Goldilocks Score: {d.score}</p>}
                   </div>
                 );
               }}
@@ -151,7 +152,7 @@ export function ScatterPlot({ games, highlightedGame, onHover, onClick }: Scatte
             )}
             <Scatter data={data} onMouseEnter={(e) => onHover(e.id)} onMouseLeave={() => onHover(null)} onClick={(e) => onClick(e.id)} cursor="pointer" isAnimationActive={false}>
               {data.map((entry) => (
-                <Cell key={entry.id} fill={entry.color} opacity={0.8} r={Math.max(3, 7 - entry.rank * 0.4)} />
+                <Cell key={entry.id} fill={entry.color} opacity={0.8} r={Math.max(3, 7 - entry.score * 0.4)} />
               ))}
             </Scatter>
             {highlighted && (

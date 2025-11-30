@@ -17,7 +17,7 @@ export interface Game {
   types: string[];
   bestwith: number[];
   recommendedwith: number[];
-  pareto_rank: number;
+  goldilocks_score: number;
 }
 
 export type ParetoFilter = "all" | "pareto-and-near" | "pareto-only";
@@ -26,9 +26,10 @@ export interface Filters {
   search: string;
   paretoFilter: ParetoFilter;
   complexityRange: [number, number];
+  ratingRange: [number, number];
   playerCount: number | null;
   categories: string[];
   mechanics: string[];
-  sortBy: "bayesaverage" | "complexity";
+  sortBy: "pareto" | "bayesaverage" | "complexity";
   sortOrder: "asc" | "desc";
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Game, Filters, ParetoFilter } from "@/types/game";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
@@ -14,6 +14,22 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { Search } from "lucide-react";
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 interface FilterControlsProps {
   filters: Filters;
@@ -30,6 +46,42 @@ export function FilterControls({
   gameCount,
   totalCount,
 }: FilterControlsProps) {
+  const [localComplexityRange, setLocalComplexityRange] = useState(filters.complexityRange);
+  const [localRatingRange, setLocalRatingRange] = useState(filters.ratingRange);
+
+  const debouncedComplexityRange = useDebounce(localComplexityRange, 300);
+  const debouncedRatingRange = useDebounce(localRatingRange, 300);
+
+  // Sync local state with filters prop when filters change externally
+  useEffect(() => {
+    setLocalComplexityRange(filters.complexityRange);
+  }, [filters.complexityRange]);
+
+  useEffect(() => {
+    setLocalRatingRange(filters.ratingRange);
+  }, [filters.ratingRange]);
+
+  // Update filters when debounced values change
+  useEffect(() => {
+    if (
+      debouncedComplexityRange[0] !== filters.complexityRange[0] ||
+      debouncedComplexityRange[1] !== filters.complexityRange[1]
+    ) {
+      onChange({ ...filters, complexityRange: debouncedComplexityRange });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedComplexityRange]);
+
+  useEffect(() => {
+    if (
+      debouncedRatingRange[0] !== filters.ratingRange[0] ||
+      debouncedRatingRange[1] !== filters.ratingRange[1]
+    ) {
+      onChange({ ...filters, ratingRange: debouncedRatingRange });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedRatingRange]);
+
   const allCategories = useMemo(() => {
     const cats = new Set<string>();
     games.forEach((g) => g.categories.forEach((c) => cats.add(c)));
@@ -40,6 +92,15 @@ export function FilterControls({
     const mechs = new Set<string>();
     games.forEach((g) => g.mechanics.forEach((m) => mechs.add(m)));
     return Array.from(mechs).sort();
+  }, [games]);
+
+  const ratingRange = useMemo(() => {
+    if (games.length === 0) return { min: 6, max: 10 };
+    const ratings = games.map((g) => g.bayesaverage);
+    return {
+      min: Math.floor(Math.min(...ratings) * 10) / 10,
+      max: Math.ceil(Math.max(...ratings) * 10) / 10,
+    };
   }, [games]);
 
   return (
@@ -71,8 +132,8 @@ export function FilterControls({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All games</SelectItem>
-            <SelectItem value="pareto-and-near">Pareto & Near</SelectItem>
-            <SelectItem value="pareto-only">Pareto only</SelectItem>
+            <SelectItem value="pareto-and-near">Goldilocks & Near</SelectItem>
+            <SelectItem value="pareto-only">Goldilocks only</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -81,19 +142,35 @@ export function FilterControls({
       <div className="flex items-center gap-3 min-w-[200px] sm:min-w-[240px]">
         <label id="complexity-label" className="text-sm font-medium whitespace-nowrap">Complexity:</label>
         <Slider
-          value={filters.complexityRange}
-          onValueChange={(value) =>
-            onChange({ ...filters, complexityRange: value as [number, number] })
-          }
+          value={localComplexityRange}
+          onValueChange={(value) => setLocalComplexityRange(value as [number, number])}
           min={1}
           max={5}
           step={0.1}
           className="w-24 sm:w-32 touch-pan-x"
           aria-labelledby="complexity-label"
-          aria-valuetext={`${filters.complexityRange[0].toFixed(1)} to ${filters.complexityRange[1].toFixed(1)}`}
+          aria-valuetext={`${localComplexityRange[0].toFixed(1)} to ${localComplexityRange[1].toFixed(1)}`}
         />
         <span className="text-sm text-muted-foreground w-16" aria-hidden="true">
-          {filters.complexityRange[0].toFixed(1)}-{filters.complexityRange[1].toFixed(1)}
+          {localComplexityRange[0].toFixed(1)}-{localComplexityRange[1].toFixed(1)}
+        </span>
+      </div>
+
+      {/* Rating slider */}
+      <div className="flex items-center gap-3 min-w-[200px] sm:min-w-[240px]">
+        <label id="rating-label" className="text-sm font-medium whitespace-nowrap">Rating:</label>
+        <Slider
+          value={localRatingRange}
+          onValueChange={(value) => setLocalRatingRange(value as [number, number])}
+          min={ratingRange.min}
+          max={ratingRange.max}
+          step={0.1}
+          className="w-24 sm:w-32 touch-pan-x"
+          aria-labelledby="rating-label"
+          aria-valuetext={`${localRatingRange[0].toFixed(1)} to ${localRatingRange[1].toFixed(1)}`}
+        />
+        <span className="text-sm text-muted-foreground w-16" aria-hidden="true">
+          {localRatingRange[0].toFixed(1)}-{localRatingRange[1].toFixed(1)}
         </span>
       </div>
 
@@ -157,7 +234,7 @@ export function FilterControls({
           value={`${filters.sortBy}-${filters.sortOrder}`}
           onValueChange={(value) => {
             const [sortBy, sortOrder] = value.split("-") as [
-              "bayesaverage" | "complexity",
+              "pareto" | "bayesaverage" | "complexity",
               "asc" | "desc"
             ];
             onChange({ ...filters, sortBy, sortOrder });
@@ -167,6 +244,7 @@ export function FilterControls({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="pareto-desc">Goldilocks Score</SelectItem>
             <SelectItem value="bayesaverage-desc">Rating (high→low)</SelectItem>
             <SelectItem value="bayesaverage-asc">Rating (low→high)</SelectItem>
             <SelectItem value="complexity-asc">Complexity (low→high)</SelectItem>

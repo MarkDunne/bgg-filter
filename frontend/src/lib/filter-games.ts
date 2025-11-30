@@ -14,22 +14,30 @@ export function filterGames(games: Game[], filters: Filters): Game[] {
     filtered = fuse.search(filters.search).map((result) => result.item);
   }
 
-  // Derive max rank from data (highest rank - 1, since highest is "unranked")
-  const maxRank = filtered.length > 0 ? Math.max(...filtered.map((g) => g.pareto_rank)) - 1 : 10;
+  // Derive max rank from data (highest score - 1, since highest is "unranked")
+  const maxRank = filtered.length > 0 ? Math.max(...filtered.map((g) => g.goldilocks_score)) - 1 : 10;
 
   // Apply other filters
   filtered = filtered.filter((game) => {
-    // Pareto filter (rank 1 = optimal, ranks 2-maxRank = near, maxRank+1 = unranked)
+    // Goldilocks filter (score 1 = optimal, scores 2-maxRank = near, maxRank+1 = unranked)
     if (filters.paretoFilter === "pareto-only") {
-      if (game.pareto_rank !== 1) return false;
+      if (game.goldilocks_score !== 1) return false;
     } else if (filters.paretoFilter === "pareto-and-near") {
-      if (game.pareto_rank > maxRank) return false;
+      if (game.goldilocks_score > maxRank) return false;
     }
 
     // Complexity range
     if (
       game.complexity < filters.complexityRange[0] ||
       game.complexity > filters.complexityRange[1]
+    ) {
+      return false;
+    }
+
+    // Rating range
+    if (
+      game.bayesaverage < filters.ratingRange[0] ||
+      game.bayesaverage > filters.ratingRange[1]
     ) {
       return false;
     }
@@ -61,6 +69,21 @@ export function filterGames(games: Game[], filters: Filters): Game[] {
   // Sort (skip if searching - keep relevance order)
   if (!filters.search.trim()) {
     filtered.sort((a, b) => {
+      if (filters.sortBy === "pareto") {
+        // Sort by Goldilocks Score first (lower score = better), then by rating to break ties
+        // "desc" means best first: score 1 before score 2, higher rating before lower
+        if (a.goldilocks_score !== b.goldilocks_score) {
+          // Lower score is better, so ascending order puts score 1 first
+          return filters.sortOrder === "desc"
+            ? a.goldilocks_score - b.goldilocks_score
+            : b.goldilocks_score - a.goldilocks_score;
+        }
+        // Break ties with rating (higher is better)
+        return filters.sortOrder === "desc"
+          ? b.bayesaverage - a.bayesaverage
+          : a.bayesaverage - b.bayesaverage;
+      }
+
       const aVal = a[filters.sortBy];
       const bVal = b[filters.sortBy];
       return filters.sortOrder === "asc" ? aVal - bVal : bVal - aVal;
