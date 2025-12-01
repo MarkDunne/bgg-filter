@@ -1,17 +1,17 @@
 import { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = "https://findmeaboardgame.com";
+    const baseUrl = "https://findmeaboardgame.com";
 
-  return {
-    rules: [
-      {
-        userAgent: "*",
-        allow: "/",
-        disallow: [],
-      },
-    ],
-    sitemap: `${baseUrl}/sitemap.xml`,
-  };
+    return {
+        rules: [
+            {
+                userAgent: "*",
+                allow: "/",
+                disallow: [],
+            },
+        ],
+        sitemap: `${baseUrl}/sitemap.xml`,
+    };
 }
 
