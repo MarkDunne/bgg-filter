@@ -3,6 +3,7 @@
 import { Game } from "@/types/game";
 import { ExternalLink } from "lucide-react";
 import { GameMetadata, formatPlayers } from "./game-metadata";
+import posthog from "posthog-js";
 
 interface GameDetailCardProps {
   game: Game | null;
@@ -45,6 +46,13 @@ export function GameDetailCard({ game }: GameDetailCardProps) {
         target="_blank"
         rel="noopener noreferrer"
         className="mt-3 inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
+        onClick={() => {
+          posthog.capture("external_link_clicked", {
+            game_id: game.id,
+            game_name: game.name,
+            link_location: "detail_card",
+          });
+        }}
       >
         View on BoardGameGeek
         <ExternalLink className="h-3.5 w-3.5" />

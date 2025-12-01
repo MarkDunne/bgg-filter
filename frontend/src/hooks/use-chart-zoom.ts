@@ -1,4 +1,5 @@
-import { useState, useCallback, useRef } from "react"
+import { useState, useCallback, useRef } from "react";
+import posthog from "posthog-js";
 
 interface Bounds {
   left: number
@@ -78,6 +79,12 @@ export function useChartZoom(naturalBounds: Bounds) {
 
       if (x2 - x1 > 0.02 && y2 - y1 > 0.05) {
         setZoom({ left: x1, right: x2, bottom: y1, top: y2 })
+        posthog.capture("chart_zoomed", {
+          rating_min: x1.toFixed(2),
+          rating_max: x2.toFixed(2),
+          complexity_min: y1.toFixed(2),
+          complexity_max: y2.toFixed(2),
+        });
       }
     }
     setDragStart(null)

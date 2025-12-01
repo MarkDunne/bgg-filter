@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { GameMetadata, PlayerRecommendations } from "./game-metadata";
 import { ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import posthog from "posthog-js";
 
 const MAX_DESCRIPTION_LENGTH = 500;
 
@@ -75,7 +76,14 @@ function MobileGameCard({ game, isExpanded, onClick }: MobileGameCardProps) {
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              posthog.capture("external_link_clicked", {
+                game_id: game.id,
+                game_name: game.name,
+                link_location: "mobile_card",
+              });
+            }}
           >
             View on BoardGameGeek
             <ExternalLink className="h-3.5 w-3.5" />
@@ -109,7 +117,14 @@ function DesktopTableRow({ game, isHighlighted, onHover, highlightedRef }: Deskt
             href={game.link}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              posthog.capture("external_link_clicked", {
+                game_id: game.id,
+                game_name: game.name,
+                link_location: "desktop_table",
+              });
+            }}
             className="font-medium truncate hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1 rounded block min-w-0"
             aria-label={`${game.name} - opens BoardGameGeek page in new tab`}
           >

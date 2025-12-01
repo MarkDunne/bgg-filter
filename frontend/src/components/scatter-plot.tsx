@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { RotateCcw } from "lucide-react";
 import { useChartZoom } from "@/hooks/use-chart-zoom";
+import posthog from "posthog-js";
 
 interface ScatterPlotProps {
   games: Game[];
@@ -80,7 +81,15 @@ export function ScatterPlot({ games, highlightedGame, onHover, onClick }: Scatte
       <div className="flex justify-between items-center gap-2 mb-2 text-xs" aria-hidden="true">
         <div className="flex items-center gap-1">
           {isZoomed ? (
-            <Button variant="ghost" size="sm" onClick={resetZoom} className="h-6 px-2 text-xs">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                resetZoom();
+                posthog.capture("chart_zoom_reset");
+              }}
+              className="h-6 px-2 text-xs"
+            >
               <RotateCcw className="h-3 w-3 mr-1" />
               Reset zoom
             </Button>

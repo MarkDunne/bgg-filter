@@ -1,0 +1,67 @@
+[
+  {
+    "event_name": "filter_applied",
+    "description": "User applies any filter (complexity, rating, player count, category, mechanic, or pareto filter)",
+    "file_path": "src/components/filter-controls.tsx"
+  },
+  {
+    "event_name": "game_selected",
+    "description": "User hovers over or clicks a game in the table or scatter plot",
+    "file_path": "src/hooks/use-game-selection.ts"
+  },
+  {
+    "event_name": "external_link_clicked",
+    "description": "User clicks BoardGameGeek link to view game details (conversion event)",
+    "file_path": "src/components/game-table.tsx"
+  },
+  {
+    "event_name": "search_performed",
+    "description": "User performs a game search using the search input",
+    "file_path": "src/components/filter-controls.tsx"
+  },
+  {
+    "event_name": "sort_changed",
+    "description": "User changes sort order (by pareto score, rating, or complexity)",
+    "file_path": "src/components/filter-controls.tsx"
+  },
+  {
+    "event_name": "chart_zoomed",
+    "description": "User zooms into a region of the scatter plot chart",
+    "file_path": "src/hooks/use-chart-zoom.ts"
+  },
+  {
+    "event_name": "chart_zoom_reset",
+    "description": "User resets the scatter plot zoom to default view",
+    "file_path": "src/components/scatter-plot.tsx"
+  },
+  {
+    "event_name": "category_filter_changed",
+    "description": "User selects or deselects game categories",
+    "file_path": "src/components/filter-controls.tsx"
+  },
+  {
+    "event_name": "mechanic_filter_changed",
+    "description": "User selects or deselects game mechanics",
+    "file_path": "src/components/filter-controls.tsx"
+  },
+  {
+    "event_name": "mobile_game_expanded",
+    "description": "User expands a game card on mobile to view details",
+    "file_path": "src/components/game-table.tsx"
+  },
+  {
+    "event_name": "scatter_plot_game_clicked",
+    "description": "User clicks on a game point in the scatter plot",
+    "file_path": "src/components/scatter-plot.tsx"
+  },
+  {
+    "event_name": "player_count_filtered",
+    "description": "User filters games by specific player count",
+    "file_path": "src/components/filter-controls.tsx"
+  },
+  {
+    "event_name": "page_viewed",
+    "description": "User views the main page - top of conversion funnel",
+    "file_path": "src/app/page.tsx"
+  }
+]

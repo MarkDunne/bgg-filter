@@ -14,6 +14,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { Search } from "lucide-react";
+import posthog from "posthog-js";
 
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -68,6 +69,11 @@ export function FilterControls({
       debouncedComplexityRange[1] !== filters.complexityRange[1]
     ) {
       onChange({ ...filters, complexityRange: debouncedComplexityRange });
+      posthog.capture("filter_applied", {
+        filter_type: "complexity",
+        min_value: debouncedComplexityRange[0],
+        max_value: debouncedComplexityRange[1],
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedComplexityRange]);
@@ -78,6 +84,11 @@ export function FilterControls({
       debouncedRatingRange[1] !== filters.ratingRange[1]
     ) {
       onChange({ ...filters, ratingRange: debouncedRatingRange });
+      posthog.capture("filter_applied", {
+        filter_type: "rating",
+        min_value: debouncedRatingRange[0],
+        max_value: debouncedRatingRange[1],
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedRatingRange]);
@@ -113,7 +124,16 @@ export function FilterControls({
           placeholder="Search games..."
           aria-label="Search games by name"
           value={filters.search}
-          onChange={(e) => onChange({ ...filters, search: e.target.value })}
+          onChange={(e) => {
+            const searchValue = e.target.value;
+            onChange({ ...filters, search: searchValue });
+            if (searchValue.length > 2) {
+              posthog.capture("search_performed", {
+                search_query: searchValue,
+                search_length: searchValue.length,
+              });
+            }
+          }}
           className="pl-8 w-full sm:w-48"
         />
       </div>
@@ -123,9 +143,13 @@ export function FilterControls({
         <label id="pareto-label" className="text-sm font-medium">Show:</label>
         <Select
           value={filters.paretoFilter}
-          onValueChange={(value: ParetoFilter) =>
-            onChange({ ...filters, paretoFilter: value })
-          }
+          onValueChange={(value: ParetoFilter) => {
+            onChange({ ...filters, paretoFilter: value });
+            posthog.capture("filter_applied", {
+              filter_type: "pareto",
+              filter_value: value,
+            });
+          }}
         >
           <SelectTrigger className="w-36" aria-labelledby="pareto-label">
             <SelectValue />
@@ -182,12 +206,16 @@ export function FilterControls({
         </label>
         <Select
           value={filters.playerCount?.toString() ?? "any"}
-          onValueChange={(value) =>
+          onValueChange={(value) => {
+            const playerCount = value === "any" ? null : parseInt(value);
             onChange({
               ...filters,
-              playerCount: value === "any" ? null : parseInt(value),
-            })
-          }
+              playerCount,
+            });
+            posthog.capture("player_count_filtered", {
+              player_count: playerCount,
+            });
+          }}
         >
           <SelectTrigger className="w-28" aria-labelledby="players-label">
             <SelectValue />
@@ -209,7 +237,13 @@ export function FilterControls({
         <MultiSelect
           options={allCategories}
           selected={filters.categories}
-          onChange={(categories) => onChange({ ...filters, categories })}
+          onChange={(categories) => {
+            onChange({ ...filters, categories });
+            posthog.capture("category_filter_changed", {
+              selected_categories: categories,
+              category_count: categories.length,
+            });
+          }}
           placeholder="Any"
           className="w-32 sm:w-40"
         />
@@ -221,7 +255,13 @@ export function FilterControls({
         <MultiSelect
           options={allMechanics}
           selected={filters.mechanics}
-          onChange={(mechanics) => onChange({ ...filters, mechanics })}
+          onChange={(mechanics) => {
+            onChange({ ...filters, mechanics });
+            posthog.capture("mechanic_filter_changed", {
+              selected_mechanics: mechanics,
+              mechanic_count: mechanics.length,
+            });
+          }}
           placeholder="Any"
           className="w-32 sm:w-40"
         />
@@ -238,6 +278,10 @@ export function FilterControls({
               "asc" | "desc"
             ];
             onChange({ ...filters, sortBy, sortOrder });
+            posthog.capture("sort_changed", {
+              sort_by: sortBy,
+              sort_order: sortOrder,
+            });
           }}
         >
           <SelectTrigger className="w-44 sm:w-50" aria-labelledby="sort-label">

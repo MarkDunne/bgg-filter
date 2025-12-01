@@ -9,6 +9,7 @@ import { GameTable } from "@/components/game-table";
 import { GameDetailCard } from "@/components/game-detail-card";
 import { useGameSelection } from "@/hooks/use-game-selection";
 import gamesData from "@/data/games.json";
+import posthog from "posthog-js";
 
 // Temporary: Map pareto_rank to goldilocks_score until data is regenerated
 const games = (gamesData as any[]).map((game) => ({
@@ -42,6 +43,14 @@ export default function Home() {
   const { highlightedGame, selectedGame, mobileSelectedGame, rowRefs, handleHover, handleMobileClick, handleScatterClick } = useGameSelection();
 
   const filteredGames = useMemo(() => filterGames(games, filters), [filters]);
+
+  // Capture page view - using useMemo to ensure it only runs once
+  useMemo(() => {
+    posthog.capture("page_viewed", {
+      page: "home",
+      total_games: games.length,
+    });
+  }, []);
   const selectedGameData = useMemo(
     () => filteredGames.find((g) => g.id === selectedGame) ?? null,
     [filteredGames, selectedGame]
